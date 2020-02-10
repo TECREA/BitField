@@ -27,15 +27,17 @@ static void bitfield_write_uint32( bitfield_t *instance, size_t index, uint32_t 
 /*============================================================================*/
 /**
  * @brief Setup a bitfield instance.
+ * 
  * @note Example :
  * 	uint8_t bfarea[ BITFIELD_SIZE(96)  ] = {0};
  *	bitfield_setup( &bf, bfarea, sizeof(bfarea));
- * @param instance A pointer to the bitfield instance.
- * @param area A pointer to the memory block to hold the bitfied. Should be
- *        an uint8_t array of size BITFIELD_SIZE(n), where n, is the number of
- *        bits inside the bitfield.
- * @param size The number of bytes in @area.
- * @return none
+ * 
+ * @param[in]   instance    A pointer to the bitfield instance.
+ * @param[in]   area        A pointer to the memory block to hold the bitfied. Should be
+ *                          an uint8_t array of size BITFIELD_SIZE(n), where n, is the number of
+ *                          bits inside the bitfield.
+ * @param[in]               size The number of bytes in @area.
+ * @return                  void
  */
 void bitfield_setup( bitfield_t *instance, void *area, size_t area_size ){
     instance->field = area;
@@ -45,9 +47,10 @@ void bitfield_setup( bitfield_t *instance, void *area, size_t area_size ){
 /*============================================================================*/
 /**
  * @brief Retrieve the state of a bit in a bitfield
- * @param instance A pointer to the bitfield instance.
- * @param index The bit-index
- * @return The value of the bit at @index.
+ * 
+ * @param[in]   instance    A pointer to the bitfield instance.
+ * @param[in]   index       The bit-index
+ * @return                  The value of the bit at @index.
  */
 uint8_t bitfield_read_bit( const bitfield_t *instance, size_t index){
     return (BITGET(instance, index))? 1u : 0u;
@@ -55,9 +58,10 @@ uint8_t bitfield_read_bit( const bitfield_t *instance, size_t index){
 /*============================================================================*/
 /**
  * @brief Sets one bit in a bitfield
- * @param instance A pointer to the bitfield instance.
- * @param index The bit-index
- * @return none
+ * 
+ * @param[in]   instance    A pointer to the bitfield instance.
+ * @param[in]   index       The bit-index
+ * @return                  void
  */
 void bitfield_set_bit( bitfield_t *instance, size_t index ){
     BITSET( instance, index );
@@ -65,9 +69,10 @@ void bitfield_set_bit( bitfield_t *instance, size_t index ){
 /*============================================================================*/
 /**
  * @brief Clears one bit in a bitfield
- * @param instance A pointer to the bitfield instance.
- * @param index The bit-index
- * @return none
+ * 
+ * @param[in]   instance    A pointer to the bitfield instance.
+ * @param[in]   index       The bit-index
+ * @return                  void
  */
 void bitfield_clear_bit( bitfield_t *instance, size_t index ){
     BITCLEAR( instance, index );
@@ -75,9 +80,10 @@ void bitfield_clear_bit( bitfield_t *instance, size_t index ){
 /*============================================================================*/
 /**
  * @brief Toggles (i.e. reverses the state of) a bit in a bitfield
- * @param instance A pointer to the bitfield instance.
- * @param index The bit-index
- * @return none
+ * 
+ * @param[in]   instance    A pointer to the bitfield instance.
+ * @param[in]   index       The bit-index
+ * @return                  void
  */
 void bitfield_toggle_bit( bitfield_t *instance, size_t index ){
     BITTOGGLE( instance, index );
@@ -85,8 +91,11 @@ void bitfield_toggle_bit( bitfield_t *instance, size_t index ){
 /*============================================================================*/
 /**
  * @brief Writes one bit in a bitfield
- * @param instance A pointer to the bitfield instance.
- * @param index The bit-index
+ * 
+ * @param[in]   instance    A pointer to the bitfield instance.
+ * @param[in]   index       The bit-index
+ * @param[in]   value       The boolean value to write
+ * @return                  void
  * @return none
  */
 void bitfield_write_bit( bitfield_t *instance, size_t index, uint8_t value ){
@@ -100,9 +109,10 @@ void bitfield_write_bit( bitfield_t *instance, size_t index, uint8_t value ){
 /*============================================================================*/
 /**
  * @brief Reads an unsigned 32-bit value from the bitfield
- * @param instance A pointer to the bitfield instance.
- * @param index The bit-index taken as offset.
- * @return The value of the bitfield from the desired index
+ * 
+ * @param[in]   instance    A pointer to the bitfield instance.
+ * @param[in]   index       The bit-index taken as offset.
+ * @return                  The value of the bitfield from the desired index
  */
 static uint32_t bitfield_read_uint32(const bitfield_t *instance, size_t index ){
     size_t slot;
@@ -119,13 +129,15 @@ static uint32_t bitfield_read_uint32(const bitfield_t *instance, size_t index ){
     }
     return result;
 }
+/*============================================================================*/
 /**
  * @brief Writes an unsigned 32-bit value to the bitfield
- * @param instance A pointer to the bitfield instance.
- * @param index The bit-index taken as offset.
- * @return none
+ * 
+ * @param[in]   instance    A pointer to the bitfield instance.
+ * @param[in]   index       The bit-index taken as offset.
+ * @param[in]   value       The uint32 value to write.
+ * @return                  void
  */
-/*============================================================================*/
 static void bitfield_write_uint32( bitfield_t *instance, size_t index, uint32_t value ){
     uint8_t of;
     uint32_t mask;
@@ -146,10 +158,11 @@ static void bitfield_write_uint32( bitfield_t *instance, size_t index, uint32_t 
 /*============================================================================*/
 /**
  * @brief Reads an unsigned n-bit value from the bitfield
- * @param instance A pointer to the bitfield instance.
- * @param index The bit-index taken as offset.
- * @param xbits The number of bits to read. ( max allowed : 32 bits )
- * @return The value from the bitfield from the desired index
+ * 
+ * @param[in]   instance    A pointer to the bitfield instance.
+ * @param[in]   index       The bit-index taken as offset.
+ * @param[in]   xbits       The number of bits to read. ( max allowed : 32 bits )
+ * @return                  The value from the bitfield from the desired index
  */
 uint32_t bitfield_read_uintn( bitfield_t *instance, size_t index, size_t xbits ){
     uint32_t value = 0ul;
@@ -169,10 +182,12 @@ uint32_t bitfield_read_uintn( bitfield_t *instance, size_t index, size_t xbits )
 }
 /**
  * @brief Writes an unsigned n-bit value from the bitfield
- * @param instance A pointer to the bitfield instance.
- * @param index The bit-index taken as offset.
- * @param xbits The number of bits to write. ( max allowed : 32 bits )
- * @return none
+ * 
+ * @param[in]   instance    A pointer to the bitfield instance.
+ * @param[in]   index       The bit-index taken as offset.
+ * @param[in]   value       The value to write.
+ * @param[in]   xbits       The number of bits to write. ( max allowed : 32 bits )
+ * @return                  void
  */
 /*============================================================================*/
 void bitfield_write_uintn( bitfield_t *instance, size_t index, uint32_t value, size_t xbits ){
@@ -195,9 +210,10 @@ void bitfield_write_uintn( bitfield_t *instance, size_t index, uint32_t value, s
 /*============================================================================*/
 /**
  * @brief Reads an 32-bit float value from the bitfield
- * @param instance A pointer to the bitfield instance.
- * @param index The bit-index taken as offset.
- * @return The float-value from the bitfield at the desired index
+ * 
+ * @param[in]   instance    A pointer to the bitfield instance.
+ * @param[in]   index       The bit-index taken as offset.
+ * @return T                he float-value from the bitfield at the desired index
  */
 float bitfield_read_float(const bitfield_t *instance, size_t index ){
     float fval;
@@ -209,9 +225,11 @@ float bitfield_read_float(const bitfield_t *instance, size_t index ){
 /*============================================================================*/
 /**
  * @brief Writes an 32-bit float value to the bitfield
- * @param instance A pointer to the bitfield instance.
- * @param index The bit-index taken as offset.
- * @return none
+ * 
+ * @param[in]   instance    A pointer to the bitfield instance.
+ * @param[in]   index       The bit-index taken as offset.
+ * @param[in]   value       The floating-point value to write
+ * @return                  void
  */
 void bitfield_write_float( bitfield_t *instance, size_t index, float value ){
     uint32_t fval;
@@ -219,6 +237,14 @@ void bitfield_write_float( bitfield_t *instance, size_t index, float value ){
     bitfield_write_uint32( instance, index, fval );
 }
 /*============================================================================*/
+/**
+ * @brief Copies n bytes from the bit-field instance to a designed memory area.
+ * 
+ * @param[in]   instance    A pointer to the bitfield instance.
+ * @param[in]   dst         Pointer to the destination array where the content is to be copied.
+ * @param[in]   n           Number of bytes to copy
+ * @return                  Destination is returned on success, otherwise NULL.
+ */
 void* bitfield_dump( bitfield_t *instance, void* dst, size_t n ){
     void *RetValue = NULL; 
     if( n <= (instance->size/8)  ){
