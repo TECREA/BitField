@@ -2,7 +2,7 @@
  * *******************************************************************************
  * @file bitfield.h
  * @author J. Camilo Gomez
- * @version 1.0.3
+ * @version 1.0.4
  * @date Feb 5 , 2020
  * @brief A bit-field manipulation library.
  *********************************************************************************/
@@ -25,22 +25,22 @@ extern "C" {
     
     #define BITFIELD_SIZE(NBITS)     (4*(( (NBITS-1) / 32 ) + 1) )
     
-        
     void bitfield_setup( bitfield_t *instance, void *area, size_t area_size );
-    uint8_t bitfield_getbit( const bitfield_t *instance, size_t index);
-    void bitfield_setbit( bitfield_t *instance, size_t index );
-    void bitfield_clearbit( bitfield_t *instance, size_t index );
-    void bitfield_togglebit( bitfield_t *instance, size_t index );
-    void bitfield_writebit( bitfield_t *instance, size_t index, uint8_t value );
-    
-    uint32_t bitfield_read_uint32(const bitfield_t *instance, size_t index );
-    void bitfield_write_uint32( bitfield_t *instance, size_t index, uint32_t value );
 
+    void bitfield_set_bit( bitfield_t *instance, size_t index );
+    void bitfield_clear_bit( bitfield_t *instance, size_t index );
+    void bitfield_toggle_bit( bitfield_t *instance, size_t index );
+    
+    uint8_t bitfield_read_bit( const bitfield_t *instance, size_t index);
+    void bitfield_write_bit( bitfield_t *instance, size_t index, uint8_t value );
+   
     uint32_t bitfield_read_uintn( bitfield_t *instance, size_t index, size_t xbits );
     void bitfield_write_uintn( bitfield_t *instance, size_t index, uint32_t value, size_t xbits );
     
     float bitfield_read_float(const bitfield_t *instance, size_t index );
     void bitfield_write_float( bitfield_t *instance, size_t index, float value );
+    
+    void* bitfield_dump( bitfield_t *instance, void* dst, size_t n );
   
     
 #ifdef __cplusplus

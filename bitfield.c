@@ -1,12 +1,11 @@
 /*!
  * *******************************************************************************
  * @file bitfield.c
- * @author J. Camilo Gomez
- * @version 1.0.3
+ * @author J. Camilo Gomez C.
+ * @version 1.0.4
  * @date Feb 5 , 2020
- * @brief A bit-field manipulation library.
+ * @brief A portable bit-field implementation.
  *********************************************************************************/
-
 #include "bitfield.h"
 
 #define LONG_BIT                (size_t) (sizeof(uint32_t) * 8 )
@@ -21,6 +20,9 @@
 #define BITOFFSET(index)        ((index) & 31)
 #define BITMASKMERGE(a,b,abits) (b ^ ((a ^ b) & abits))
 #define BITMASK32(nbits)        ((nbits)? ~(uint32_t)0 >> (sizeof(uint32_t)*8-(nbits)) : (uint32_t)0)
+
+static uint32_t bitfield_read_uint32(const bitfield_t *instance, size_t index );
+static void bitfield_write_uint32( bitfield_t *instance, size_t index, uint32_t value );
 
 /*============================================================================*/
 /**
@@ -47,7 +49,7 @@ void bitfield_setup( bitfield_t *instance, void *area, size_t area_size ){
  * @param index The bit-index
  * @return The value of the bit at @index.
  */
-uint8_t bitfield_getbit( const bitfield_t *instance, size_t index){
+uint8_t bitfield_read_bit( const bitfield_t *instance, size_t index){
     return (BITGET(instance, index))? 1u : 0u;
 }
 /*============================================================================*/
@@ -57,7 +59,7 @@ uint8_t bitfield_getbit( const bitfield_t *instance, size_t index){
  * @param index The bit-index
  * @return none
  */
-void bitfield_setbit( bitfield_t *instance, size_t index ){
+void bitfield_set_bit( bitfield_t *instance, size_t index ){
     BITSET( instance, index );
 }
 /*============================================================================*/
@@ -67,7 +69,7 @@ void bitfield_setbit( bitfield_t *instance, size_t index ){
  * @param index The bit-index
  * @return none
  */
-void bitfield_clearbit( bitfield_t *instance, size_t index ){
+void bitfield_clear_bit( bitfield_t *instance, size_t index ){
     BITCLEAR( instance, index );
 }
 /*============================================================================*/
@@ -77,7 +79,7 @@ void bitfield_clearbit( bitfield_t *instance, size_t index ){
  * @param index The bit-index
  * @return none
  */
-void bitfield_togglebit( bitfield_t *instance, size_t index ){
+void bitfield_toggle_bit( bitfield_t *instance, size_t index ){
     BITTOGGLE( instance, index );
 }
 /*============================================================================*/
@@ -87,7 +89,7 @@ void bitfield_togglebit( bitfield_t *instance, size_t index ){
  * @param index The bit-index
  * @return none
  */
-void bitfield_writebit( bitfield_t *instance, size_t index, uint8_t value ){
+void bitfield_write_bit( bitfield_t *instance, size_t index, uint8_t value ){
     if( 0u != value ){
         BITSET( instance, index );
     }
@@ -102,7 +104,7 @@ void bitfield_writebit( bitfield_t *instance, size_t index, uint8_t value ){
  * @param index The bit-index taken as offset.
  * @return The value of the bitfield from the desired index
  */
-uint32_t bitfield_read_uint32(const bitfield_t *instance, size_t index ){
+static uint32_t bitfield_read_uint32(const bitfield_t *instance, size_t index ){
     size_t slot;
     uint8_t of, bits_taken;
     uint32_t result;
@@ -124,7 +126,7 @@ uint32_t bitfield_read_uint32(const bitfield_t *instance, size_t index ){
  * @return none
  */
 /*============================================================================*/
-void bitfield_write_uint32( bitfield_t *instance, size_t index, uint32_t value ){
+static void bitfield_write_uint32( bitfield_t *instance, size_t index, uint32_t value ){
     uint8_t of;
     uint32_t mask;
     size_t slot;
@@ -146,29 +148,49 @@ void bitfield_write_uint32( bitfield_t *instance, size_t index, uint32_t value )
  * @brief Reads an unsigned n-bit value from the bitfield
  * @param instance A pointer to the bitfield instance.
  * @param index The bit-index taken as offset.
- * @param xbits The number of bits to read.
+ * @param xbits The number of bits to read. ( max allowed : 32 bits )
  * @return The value from the bitfield from the desired index
  */
 uint32_t bitfield_read_uintn( bitfield_t *instance, size_t index, size_t xbits ){
-    uint32_t value;
-    value = bitfield_read_uint32( instance, index );
-    value &= ( (~((uint32_t)0)) >> (32-xbits) ); /*safe mask*/
+    uint32_t value = 0ul;
+    if( xbits <= 32 ){
+        if( 1 == xbits ){
+            value = (uint32_t)bitfield_read_bit( instance, index );
+        }
+        else if( 32 == xbits ){
+            value = bitfield_read_uint32( instance, index );
+        }
+        else{
+            value = bitfield_read_uint32( instance, index );
+            value &= ( (~((uint32_t)0)) >> (32-xbits) ); /*safe mask*/   
+        }        
+    }
     return value;
 }
 /**
  * @brief Writes an unsigned n-bit value from the bitfield
  * @param instance A pointer to the bitfield instance.
  * @param index The bit-index taken as offset.
- * @param xbits The number of bits to write.
+ * @param xbits The number of bits to write. ( max allowed : 32 bits )
  * @return none
  */
 /*============================================================================*/
 void bitfield_write_uintn( bitfield_t *instance, size_t index, uint32_t value, size_t xbits ){
-    uint32_t w = bitfield_read_uint32( instance, index );
-    uint32_t mask;
-    value &= ( (~((uint32_t)0)) >> (32-xbits) ); /*safe mask*/
-    mask = ( ~((uint32_t)0) ) << xbits;
-    bitfield_write_uint32( instance, index, BITMASKMERGE(w, value, mask)); 
+    uint32_t w, mask;
+    if( xbits <= 32 ){
+        if( 1 == xbits ){
+            bitfield_write_bit( instance, index, (uint8_t)value );
+        }
+        else if( 32 == xbits ){
+            value = bitfield_read_uint32( instance, index );
+        }
+        else{
+            w = bitfield_read_uint32( instance, index );
+            value &= ( (~((uint32_t)0)) >> (32-xbits) ); /*safe mask*/
+            mask = ( ~((uint32_t)0) ) << xbits;
+            bitfield_write_uint32( instance, index, BITMASKMERGE(w, value, mask));         
+        }        
+    }
 }
 /*============================================================================*/
 /**
@@ -195,5 +217,13 @@ void bitfield_write_float( bitfield_t *instance, size_t index, float value ){
     uint32_t fval;
     (void)memcpy( &fval, &value, sizeof(float) );
     bitfield_write_uint32( instance, index, fval );
+}
+/*============================================================================*/
+void* bitfield_dump( bitfield_t *instance, void* dst, size_t n ){
+    void *RetValue = NULL; 
+    if( n <= (instance->size/8)  ){
+        RetValue = memcpy( dst, instance->field, n );
+    }
+    RetValue;
 }
 /*============================================================================*/
