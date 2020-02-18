@@ -8,7 +8,7 @@
  *********************************************************************************/
 #include "bitfield.h"
 
-#define LONG_BIT                (size_t) (sizeof(uint32_t) * 8 )
+#define LONG_BIT                (size_t) (sizeof(uint32_t) * 8uL )
 #define BITMASK(b)              (1UL << ((b) % LONG_BIT))
 #define BITSLOT(b)              ((b) / LONG_BIT) /*((b) >> 6 )*/
 #define BITGET(a, b)            (((a)->field[BITSLOT(b)] >> ((b) % LONG_BIT))  & 1UL)
@@ -17,9 +17,9 @@
 #define BITTEST(a, b)           ((a)->field[BITSLOT(b)] & BITMASK(b))
 #define BITTOGGLE(a, b)         ((a)->field[BITSLOT(b)] ^= BITMASK(b))
 #define BITNSLOTS(nb)           ((nb + LONG_BIT - 1) / LONG_BIT)
-#define BITOFFSET(index)        ((index) & 31)
-#define BITMASKMERGE(a,b,abits) (b ^ ((a ^ b) & abits))
-#define BITMASK32(nbits)        ((nbits)? ~(uint32_t)0 >> (sizeof(uint32_t)*8-(nbits)) : (uint32_t)0)
+#define BITOFFSET(index)        ((index) & (uint32_t)31u)
+#define BITMASKMERGE(a,b,abits) ((b) ^ (((a) ^ (b)) & (abits)))
+#define BITMASK32(nbits)        (( 0u != (nbits) )? ~(uint32_t)0 >> (sizeof(uint32_t)*8uL-(nbits)) : (uint32_t)0)
 
 static uint32_t bitfield_read_uint32(const bitfield_t *instance, size_t index );
 static void bitfield_write_uint32( bitfield_t *instance, size_t index, uint32_t value );
@@ -41,7 +41,7 @@ static void bitfield_write_uint32( bitfield_t *instance, size_t index, uint32_t 
  */
 void bitfield_setup( bitfield_t *instance, void *area, size_t area_size ){
     instance->field = area;
-    instance->size = (area_size*8);
+    instance->size = (area_size*8u);
     instance->nSlots = area_size/sizeof(uint32_t);
 }
 /*============================================================================*/
@@ -53,7 +53,7 @@ void bitfield_setup( bitfield_t *instance, void *area, size_t area_size ){
  * @return                  The value of the bit at @index.
  */
 uint8_t bitfield_read_bit( const bitfield_t *instance, size_t index){
-    return (BITGET(instance, index))? 1u : 0u;
+    return (0u != BITGET(instance, index))? 1u : 0u;
 }
 /*============================================================================*/
 /**
@@ -120,12 +120,12 @@ static uint32_t bitfield_read_uint32(const bitfield_t *instance, size_t index ){
     uint32_t result;
 
     slot = BITSLOT(index);
-    of = BITOFFSET( index );
+    of = (uint8_t)BITOFFSET( index );
     result = instance->field[ slot ] >> of;
-    bits_taken  = 32 - of;
+    bits_taken  = 32u - of;
     
-    if( of > 0 && index + bits_taken < instance->size ){
-        result |= instance->field[ slot+1 ] << (uint32_t)bits_taken ;
+    if( ( 0u != of ) && ( ( index + bits_taken ) < instance->size ) ){
+        result |= instance->field[ slot+1u ] << (uint32_t)bits_taken ; /*ATH-shift-bounds,MISRAC2012-Rule-12.2 deviation allowed*/
     }
     return result;
 }
@@ -143,15 +143,15 @@ static void bitfield_write_uint32( bitfield_t *instance, size_t index, uint32_t 
     uint32_t mask;
     size_t slot;
     slot = BITSLOT( index );
-    of = BITOFFSET( index );
-    if( 0 == of ){
+    of = (uint8_t)BITOFFSET( index );
+    if( 0u == of ){
         instance->field[ slot ] = value;
     }
     else{
         mask = BITMASK32(of);
         instance->field[ slot   ] = ( value<<of ) | ( instance->field[slot] & mask )    ;
-        if( slot+1 < instance->nSlots ){
-            instance->field[ slot+1 ] = ( value >> (32-of) ) | ( instance->field[ slot+1 ] & ( ~mask ) );  
+        if( slot+1u < instance->nSlots ){
+            instance->field[ slot+1u ] = ( value >> (32u - of) ) | ( instance->field[ slot+1u ] & ( ~mask ) );  
         }
      }
 }
@@ -165,17 +165,17 @@ static void bitfield_write_uint32( bitfield_t *instance, size_t index, uint32_t 
  * @return                  The value from the bitfield from the desired index
  */
 uint32_t bitfield_read_uintn( bitfield_t *instance, size_t index, size_t xbits ){
-    uint32_t value = 0ul;
-    if( xbits <= 32 ){
-        if( 1 == xbits ){
+    uint32_t value = 0uL;
+    if( xbits <= 32u ){
+        if( 1u == xbits ){
             value = (uint32_t)bitfield_read_bit( instance, index );
         }
-        else if( 32 == xbits ){
+        else if( 32u == xbits ){
             value = bitfield_read_uint32( instance, index );
         }
         else{
             value = bitfield_read_uint32( instance, index );
-            value &= ( (~((uint32_t)0)) >> (32-xbits) ); /*safe mask*/   
+            value &= ( (~((uint32_t)0)) >> (32u - xbits) ); /*safe mask*/    /*ATH-shift-bounds,MISRAC2012-Rule-12.2 deviation allowed*/
         }        
     }
     return value;
@@ -192,17 +192,17 @@ uint32_t bitfield_read_uintn( bitfield_t *instance, size_t index, size_t xbits )
 /*============================================================================*/
 void bitfield_write_uintn( bitfield_t *instance, size_t index, uint32_t value, size_t xbits ){
     uint32_t w, mask;
-    if( xbits <= 32 ){
-        if( 1 == xbits ){
+    if( xbits <= 32u ){
+        if( 1u == xbits ){
             bitfield_write_bit( instance, index, (uint8_t)value );
         }
-        else if( 32 == xbits ){
-            value = bitfield_read_uint32( instance, index );
+        else if( 32u == xbits ){
+            bitfield_write_uint32( instance, index, value );
         }
         else{
             w = bitfield_read_uint32( instance, index );
-            value &= ( (~((uint32_t)0)) >> (32-xbits) ); /*safe mask*/
-            mask = ( ~((uint32_t)0) ) << xbits;
+            value &= ( (~((uint32_t)0)) >> (32u - xbits) ); /*safe mask*/ /*ATH-shift-bounds,MISRAC2012-Rule-12.2 deviation allowed*/
+            mask = ( ~((uint32_t)0) ) << xbits;  /*!#ok*/
             bitfield_write_uint32( instance, index, BITMASKMERGE(w, value, mask));         
         }        
     }
@@ -219,7 +219,7 @@ float bitfield_read_float(const bitfield_t *instance, size_t index ){
     float fval;
     uint32_t rval;
     rval = bitfield_read_uint32( instance, index );
-    memcpy( &fval, &rval, sizeof(float) );
+    (void)memcpy( &fval, &rval, sizeof(float) );
     return fval;
 }
 /*============================================================================*/
@@ -247,9 +247,9 @@ void bitfield_write_float( bitfield_t *instance, size_t index, float value ){
  */
 void* bitfield_dump( bitfield_t *instance, void* dst, size_t n ){
     void *RetValue = NULL; 
-    if( n <= (instance->size/8)  ){
+    if( n <= (instance->size/8u)  ){
         RetValue = memcpy( dst, instance->field, n );
     }
-    RetValue;
+    return RetValue;
 }
 /*============================================================================*/

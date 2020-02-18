@@ -18,7 +18,7 @@ extern "C" {
     #include <string.h>
     
     typedef struct{
-        uint32_t *field; /*-> points to the used-defined memory block to hol th */
+        uint32_t *field; /*-> points to the used-defined memory block to hold the bitfield storage */
         size_t size;     /*-> Bits capacity*/
         size_t nSlots;   /*-> Number of 32-bit slots for the bitfield storage*/
     }bitfield_t;
