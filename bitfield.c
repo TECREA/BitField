@@ -2,7 +2,7 @@
  * *******************************************************************************
  * @file bitfield.c
  * @author J. Camilo Gomez C.
- * @version 1.0.4
+ * @version 1.0.5
  * @date Feb 5 , 2020
  * @brief A portable bit-field implementation.
  *********************************************************************************/
@@ -11,7 +11,7 @@
 #define LONG_BIT                (size_t) (sizeof(uint32_t) * 8uL )
 #define BITMASK(b)              (1UL << ((b) % LONG_BIT))
 #define BITSLOT(b)              ((b) / LONG_BIT) /*((b) >> 6 )*/
-#define BITGET(a, b)            (((a)->field[BITSLOT(b)] >> ((b) % LONG_BIT))  & 1UL)
+#define BITGET(a, b)            (((a)->field[BITSLOT(b)] >> ((b) % LONG_BIT)) & 1uL)
 #define BITSET(a, b)            ((a)->field[BITSLOT(b)] |= BITMASK(b))
 #define BITCLEAR(a, b)          ((a)->field[BITSLOT(b)] &= ~BITMASK(b))
 #define BITTEST(a, b)           ((a)->field[BITSLOT(b)] & BITMASK(b))
@@ -43,6 +43,28 @@ void bitfield_setup( bitfield_t *instance, void *area, size_t area_size ){
     instance->field = area;
     instance->size = (area_size*8u);
     instance->nSlots = area_size/sizeof(uint32_t);
+}
+/*============================================================================*/
+/**
+ * @brief Clear all the bits in the bitfield.
+ * 
+ * @param[in]   instance    A pointer to the bitfield instance.
+ *
+ * @return                  void
+ */
+void bitfield_clearall( bitfield_t *instance ){
+    (void)memset( instance->field, 0, instance->size/8u );
+}
+/*============================================================================*/
+/**
+ * @brief Set all the bits in the bitfield.
+ * 
+ * @param[in]   instance    A pointer to the bitfield instance.
+ *
+ * @return                  void
+ */
+void bitfield_setall( bitfield_t *instance ){
+    (void)memset( instance->field, 0xFF, instance->size/8u );
 }
 /*============================================================================*/
 /**

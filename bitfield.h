@@ -26,6 +26,8 @@ extern "C" {
     #define BITFIELD_SIZE(NBITS)     (4*(( (NBITS-1) / 32 ) + 1) )
     
     void bitfield_setup( bitfield_t *instance, void *area, size_t area_size );
+    void bitfield_clearall( bitfield_t *instance );
+    void bitfield_setall( bitfield_t *instance );
 
     void bitfield_set_bit( bitfield_t *instance, size_t index );
     void bitfield_clear_bit( bitfield_t *instance, size_t index );
