@@ -9,7 +9,7 @@
 #include "bitfield.h"
 
 #define LONG_BIT                (size_t) (sizeof(uint32_t) * 8uL )
-#define BITMASK(b)              (1UL << ((b) % LONG_BIT))
+#define BITMASK(b)              ((uint32_t)1uL << ((b) % LONG_BIT))
 #define BITSLOT(b)              ((b) / LONG_BIT) /*((b) >> 6 )*/
 #define BITGET(a, b)            (((a)->field[BITSLOT(b)] >> ((b) % LONG_BIT)) & 1uL)
 #define BITSET(a, b)            ((a)->field[BITSLOT(b)] |= BITMASK(b))
@@ -144,7 +144,7 @@ static uint32_t bitfield_read_uint32(const bitfield_t *instance, size_t index ){
     slot = BITSLOT(index);
     of = (uint8_t)BITOFFSET( index );
     result = instance->field[ slot ] >> of;
-    bits_taken  = 32u - of;
+    bits_taken  = (uint8_t)(32u - of);
     
     if( ( 0u != of ) && ( ( index + bits_taken ) < instance->size ) ){
         result |= instance->field[ slot+1u ] << (uint32_t)bits_taken ; /*ATH-shift-bounds,MISRAC2012-Rule-12.2 deviation allowed*/
